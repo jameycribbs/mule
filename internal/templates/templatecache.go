@@ -20,10 +20,16 @@ func NewTemplateCache(dir string) (map[string]*template.Template, error) {
 		}
 
 		if matched {
-			ts, err := template.ParseFiles(path)
+
+			ts, err := template.New(info.Name()).Funcs(functions).ParseFiles(path)
 			if err != nil {
 				return err
 			}
+
+			//ts, err := template.ParseFiles(path)
+			//if err != nil {
+			//	return err
+			//}
 
 			ts, err = ts.ParseGlob(filepath.Join(dir, "*.layout.tmpl"))
 			if err != nil {

@@ -14,8 +14,9 @@
         </tr>
         {{range .Expenses}}
         <tr>
-            <td><a href='/expense?id={{.ID}}'>{{.Name}}</a></td>
-            <td>{{.Date}}</td>
+            <td><a href='/expense/{{.ID}}'>{{.Name}}</a></td>
+            <td>{{.Amount}}</td>
+            <td>{{humanDate .Date}}</td>
             <td>{{.Category}}</td>
             <td>#{{.ID}}</td>
         </tr>

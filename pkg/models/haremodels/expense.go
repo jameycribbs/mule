@@ -13,7 +13,7 @@ type ExpenseModel struct {
 	DB *hare.Database
 }
 
-func (m *ExpenseModel) Insert(name string, date time.Time, amount int, category string, notes string) (int, error) {
+func (m *ExpenseModel) Insert(name string, date time.Time, amount float64, category string, notes string) (int, error) {
 	e := models.Expense{Name: name, Date: date, Amount: amount, Category: category, Notes: notes}
 
 	id, err := m.DB.Insert("expenses", &e)

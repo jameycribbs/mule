@@ -3,18 +3,20 @@ package router
 import (
 	"net/http"
 
+	"github.com/go-chi/chi"
 	"github.com/jameycribbs/mule/internal/application"
 	"github.com/jameycribbs/mule/internal/handlers"
 )
 
-func New(app *application.Application) *http.ServeMux {
-	mux := http.NewServeMux()
+func New(app *application.Application) http.Handler {
+	r := chi.NewRouter()
 
-	mux.HandleFunc("/", handlers.Home(app))
-	mux.HandleFunc("/expense", handlers.ShowExpense(app))
-	mux.HandleFunc("/expense/create", handlers.CreateExpense(app))
+	r.Get("/", handlers.Home(app))
+	r.Get("/expense/create", handlers.CreateExpenseForm(app))
+	r.Post("/expense/create", handlers.CreateExpense(app))
+	r.Get("/expense/{id}", handlers.ShowExpense(app))
 
-	mux.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("./ui/static/"))))
+	r.Handle("/static", http.StripPrefix("/static", http.FileServer(http.Dir("./ui/static/"))))
 
-	return mux
+	return handlers.RecoverPanic(app, handlers.LogRequest(app, handlers.SecureHeaders(r)))
 }

@@ -9,19 +9,12 @@ import (
 
 func Home(app *application.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/" {
-			app.NotFound(w)
-			return
-		}
-
 		e, err := app.Models.Expenses.Latest(30)
 		if err != nil {
 			app.ServerError(w, err)
 			return
 		}
 
-		data := &templates.TemplateData{Expenses: e}
-
-		render(app, w, r, "home.page.tmpl", data)
+		render(app, w, r, "home.page.tmpl", &templates.TemplateData{Expenses: e})
 	}
 }

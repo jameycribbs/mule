@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/jameycribbs/mule/internal/application"
 	"github.com/jameycribbs/mule/internal/templates"
 	"github.com/jameycribbs/mule/pkg/models"
@@ -14,7 +16,7 @@ import (
 
 func ShowExpense(app *application.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.Atoi(r.URL.Query().Get("id"))
+		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil || id < 1 {
 			app.NotFound(w)
 			return
@@ -30,27 +32,52 @@ func ShowExpense(app *application.Application) http.HandlerFunc {
 			return
 		}
 
-		data := &templates.TemplateData{Expense: e}
+		render(app, w, r, "expenses/show.page.tmpl", &templates.TemplateData{Expense: e})
+	}
+}
 
-		render(app, w, r, "expenses/show.page.tmpl", data)
+func CreateExpenseForm(app *application.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		render(app, w, r, "expenses/create.page.tmpl", nil)
 	}
 }
 
 func CreateExpense(app *application.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			w.Header().Set("Allow", http.MethodPost)
-			app.ClientError(w, http.StatusMethodNotAllowed)
+		errors := make(map[string]string)
+
+		err := r.ParseForm()
+		if err != nil {
+			app.ClientError(w, http.StatusBadRequest)
 			return
 		}
 
-		// Create some variables holding dummy data. We'll remove these later on
-		// during the build.
-		name := "Water and Sewer"
-		date := time.Now()
-		amount := 7515
-		category := "Utilities"
-		notes := ""
+		name := r.PostForm.Get("name")
+		if strings.TrimSpace(name) == "" {
+			errors["name"] = "This field cannot be blank"
+		}
+
+		date, err := time.Parse("January 2, 2006", r.PostForm.Get("date"))
+		if err != nil {
+			errors["date"] = "This is not a valid date"
+		}
+
+		amount, err := strconv.ParseFloat(r.PostForm.Get("amount"), 64)
+		if err != nil {
+			errors["amount"] = "This field must be a dollar amount"
+		}
+
+		category := r.PostForm.Get("category")
+		if strings.TrimSpace(category) == "" {
+			errors["category"] = "This field cannot be blank"
+		}
+
+		notes := r.PostForm.Get("notes")
+
+		if len(errors) > 0 {
+			fmt.Fprint(w, errors)
+			return
+		}
 
 		id, err := app.Models.Expenses.Insert(name, date, amount, category, notes)
 		if err != nil {
@@ -58,6 +85,6 @@ func CreateExpense(app *application.Application) http.HandlerFunc {
 			return
 		}
 
-		http.Redirect(w, r, fmt.Sprintf("/expense?id=%d", id), http.StatusSeeOther)
+		http.Redirect(w, r, fmt.Sprintf("/expense/%d", id), http.StatusSeeOther)
 	}
 }
