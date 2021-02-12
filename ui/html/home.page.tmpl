@@ -1,0 +1,27 @@
+{{template "base" .}}
+
+{{define "title"}}Home{{end}}
+
+{{define "main"}}
+    <h2>Latest Expenses</h2>
+    {{if .Expenses}}
+     <table>
+        <tr>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Category</th>
+            <th>ID</th>
+        </tr>
+        {{range .Expenses}}
+        <tr>
+            <td><a href='/expense?id={{.ID}}'>{{.Name}}</a></td>
+            <td>{{.Date}}</td>
+            <td>{{.Category}}</td>
+            <td>#{{.ID}}</td>
+        </tr>
+        {{end}}
+    </table>
+    {{else}}
+        <p>There's nothing to see here... yet!</p>
+    {{end}}
+{{end}}

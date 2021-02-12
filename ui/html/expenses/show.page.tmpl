@@ -1,0 +1,17 @@
+{{template "base" .}}
+
+{{define "title"}}Expense #{{.Expense.ID}}{{end}}
+
+{{define "main"}}
+  {{with .Expense}}
+  <div class='snippet'>
+      <div class='metadata'>
+          <strong>{{.Name}}</strong>
+          <span>{{.Date}}</span>
+      </div>
+      <pre><code><strong>Amount:</strong> {{.Amount}}</code></pre>
+      <pre><code><strong>Category:</strong> {{.Category}}</code></pre>
+      <pre><code><strong>Notes:</strong> {{.Notes}}</code></pre>
+</div>
+  {{end}}
+{{end}}
